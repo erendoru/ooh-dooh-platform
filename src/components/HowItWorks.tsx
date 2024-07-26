@@ -36,7 +36,7 @@ const features = [
 
 const HowItWorks: React.FC = () => {
   return (
-    <div className="bg-[#FFF8E1] py-16">
+    <div className="py-16">
       <div className="container mx-auto px-4">
         <h2 className="text-3xl md:text-4xl font-bold mb-8 text-left text-[#3B82F6]">
           Panom Nasıl Çalışır?
