@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
 import { Roboto } from "next/font/google";
 import ClientLayout from "./ClientLayout";
+import { cn } from "@/lib/utils";
 const inter = Inter({ subsets: ["latin"] });
 
 const roboto = Roboto({ subsets: ["latin"], weight: ["400", "700"] });
@@ -20,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={roboto.className}>
-      <body className={inter.className}>
+      <body className={(inter.className, cn())}>
         <ClientLayout>{children}</ClientLayout>
       </body>
     </html>

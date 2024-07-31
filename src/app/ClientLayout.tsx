@@ -2,7 +2,7 @@
 
 import { AuthProvider } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
-
+import Footbar from "@/components/Footbar";
 export default function ClientLayout({
   children,
 }: {
@@ -12,6 +12,7 @@ export default function ClientLayout({
     <AuthProvider>
       <Navbar />
       {children}
+      <Footbar />
     </AuthProvider>
   );
 }

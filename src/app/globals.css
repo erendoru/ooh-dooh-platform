@@ -66,6 +66,33 @@
 }
 
 body {
-
+  overflow-x: hidden; /* Yatay kaydırmayı engeller */
   color: var(--color-text);
+}
+
+.sidebar {
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 16rem; /* 64px ile aynı, Tailwind'in w-64 sınıfına eşdeğer */
+  z-index: 10;
+}
+
+.main-content {
+  margin-right: 16rem; /* Sidebar genişliği kadar sağ kenar boşluğu */
+}
+@media (max-width: 768px) {
+  .sidebar {
+    position: static;
+    width: 100%;
+    height: auto;
+  }
+
+  .main-content {
+    margin-right: 0;
+  }
+}
+.navbar {
+  z-index: 50; /* Navbar'ın sidebar'ın üzerinde kalmasını sağlar */
 }
