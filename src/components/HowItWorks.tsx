@@ -1,14 +1,29 @@
 "use client";
-
 import React from "react";
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronRight } from "lucide-react";
 
 const steps = [
-  "Pano Lokasyonunu Seç",
-  "Bütçe ve Tarihleri Belirle",
-  "Pano Görsellerinizi Yükleyin",
-  "Reklam Onayı İçin Bekleyin",
+  {
+    title: "Pano Lokasyonunu Seç",
+    description:
+      "Panonun gözükmesini istediğin lokasyonu seç. isteiğin kadar çok ya da bütçenin yettiği kadar az lokasyon seçebilirsin.",
+  },
+  {
+    title: "Bütçe ve Tarihleri Belirle",
+    description:
+      "Panonun gözükmesini istediğin lokasyonu seç. istediğin kadar çok ya da bütçenin yettiği kadar az lokasyon seçebilirsin.",
+  },
+  {
+    title: "Pano Görsellerinizi Yükleyin",
+    description:
+      "Panonun gözükmesini istediğin lokasyonu seç. istediğin kadar çok ya da bütçenin yettiği kadar az lokasyon seçebilirsin.",
+  },
+  {
+    title: "Reklam Onayı İçin Bekleyin",
+    description:
+      "Panonun gözükmesini istediğin lokasyonu seç. istediğin kadar çok ya da bütçenin yettiği kadar az lokasyon seçebilirsin.",
+  },
 ];
 
 const features = [
@@ -36,66 +51,47 @@ const features = [
 
 const HowItWorks: React.FC = () => {
   return (
-    <div className="py-16">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold mb-8 text-left text-[#3B82F6]">
-          Panom Nasıl Çalışır?
-        </h2>
-
-        <div className="flex flex-col lg:flex-row gap-8 mb-12">
-          <div className="lg:w-1/2">
-            <ul className="space-y-4 list-none pl-0">
-              {steps.map((step, index) => (
-                <li key={index} className="text-[#1F2937]">
-                  {step}
-                </li>
-              ))}
-            </ul>
-
-            <div className="mt-8 space-y-4">
-              <div className="flex items-center justify-between">
-                <p className="text-[#1F2937] mr-2">
-                  Tasarım aşamasında nelere dikkat edilmeli?
-                </p>
-                <button className="bg-[#3B82F6] text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-opacity-90 transition duration-300 flex-shrink-0">
-                  <ChevronRight size={20} />
-                </button>
+    <div className=" w-full pt-44 text-gray-600 container mx-auto px-4 ">
+      <h1 className=" text-4xl md:text-5xl lg:text-5xl font-bold text-gray-800 leading-tight">
+        Panom Nasıl Çalışır
+      </h1>
+      <div className="infos md:flex  gap-8 pt-5 justify-between">
+        <div className="border-l border-gray-700 pl-3 w-[500px]">
+          {steps.map((step, index) => (
+            <div key={index} className="flex gap-4">
+              <div className="text-3xl font-bold text-gray-800">
+                {index + 1}.
               </div>
-              <div className="flex items-center justify-between">
-                <p className="text-[#1F2937] mr-2">
-                  Reklam panosu tasarlamak için yardıma mı ihtiyacın var?
-                </p>
-                <button className="bg-[#3B82F6] text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-opacity-90 transition duration-300 flex-shrink-0">
-                  <ChevronRight size={20} />
-                </button>
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  {step.title}
+                </h2>
+                <p className="text-gray-600">{step.description}</p>
               </div>
             </div>
-          </div>
-
-          <div className="lg:w-1/2">
-            <div className="bg-gray-300 w-full h-64 rounded-lg flex items-center justify-center">
-              <p className="text-gray-600">Görsel Alanı</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((feature, index) => (
-            <Card
-              key={index}
-              className="bg-white shadow-lg hover:shadow-xl transition duration-300 rounded-xl overflow-hidden"
-            >
-              <CardHeader className="bg-[#3B82F6] text-white">
-                <CardTitle className="text-center">{feature.title}</CardTitle>
-              </CardHeader>
-              <CardContent className="p-4">
-                <p className="text-[#1F2937] text-center">
-                  {feature.description}
-                </p>
-              </CardContent>
-            </Card>
           ))}
         </div>
+        <div className="image">
+          <Image
+            src="/7065476.webp"
+            alt="Açık Hava Reklamcılığı"
+            width={600}
+            height={400}
+            className="rounded-lg shadow-xl"
+          />
+        </div>
+      </div>
+      <div className="md:flex justify-around pt-20 gap-8 text-center  md:visible">
+        {features.map((step, index) => (
+          <Card key={index}>
+            <CardHeader>
+              <CardTitle>{step.title}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>{step.description}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );

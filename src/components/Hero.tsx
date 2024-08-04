@@ -2,6 +2,9 @@
 
 import React from "react";
 import Image from "next/image";
+import { FlipWords } from "../../src/components/ui/flip-words";
+
+const words = ["Hızlı", "Etkili", "Yeni"];
 
 const Hero: React.FC = () => {
   return (
@@ -10,7 +13,8 @@ const Hero: React.FC = () => {
         <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
           <div className="lg:w-1/2 space-y-6">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 leading-tight">
-              Açık Hava Reklamcılığında Yeni Nesil Çözüm
+              Açık Hava Reklamcılığında <FlipWords words={words} />
+              Çözüm
             </h1>
             <p className="text-xl text-gray-600">
               PANOM ile reklam alanlarınızı kolayca kiralayın veya reklam verin.

@@ -1,35 +1,31 @@
 import React, { useState, useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { getBillboardViews } from "@/lib/supabase";
+import { getBillboardViews, addToCart } from "@/lib/supabase";
 import DatePicker from "react-datepicker";
 import { X } from "lucide-react";
 import "react-datepicker/dist/react-datepicker.css";
-
-interface Billboard {
-  id: number;
-  name: string;
-  location: string;
-  dimensions: string;
-  side: string;
-  price: number;
-  images: string[];
-}
+import { Billboard } from "@/types";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface BillboardModalProps {
   billboard: Billboard;
   onClose: () => void;
+  onCartUpdate?: (newCount: number) => void;
 }
 
 const BillboardModal: React.FC<BillboardModalProps> = ({
   billboard,
   onClose,
+  onCartUpdate,
 }) => {
+  const { user } = useAuth();
   const [startDate, setStartDate] = useState<Date>(new Date());
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [views, setViews] = useState<
     { view_date: string; view_count: number }[]
   >([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   useEffect(() => {
     async function fetchViews() {
@@ -65,6 +61,26 @@ const BillboardModal: React.FC<BillboardModalProps> = ({
     setCurrentImageIndex((prevIndex) =>
       prevIndex === 0 ? billboard.images.length - 1 : prevIndex - 1
     );
+  };
+
+  const handleAddToCart = async () => {
+    if (!user) {
+      alert("Sepete eklemek için giriş yapmalısınız.");
+      return;
+    }
+
+    setIsAddingToCart(true);
+    try {
+      await addToCart(user.id, billboard.id, startDate, endDate);
+      // Alert'i kaldırdık
+      window.dispatchEvent(new Event("cartUpdated"));
+      onClose();
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      alert("Sepete eklerken bir hata oluştu. Lütfen tekrar deneyin.");
+    } finally {
+      setIsAddingToCart(false);
+    }
   };
 
   return (
@@ -114,6 +130,10 @@ const BillboardModal: React.FC<BillboardModalProps> = ({
               <p>
                 <strong>Ücret:</strong> {billboard.price} TL
               </p>
+              <p>
+                <strong>Pano Türü:</strong>{" "}
+                {billboard.type?.name || "Belirtilmemiş"}
+              </p>
             </div>
             <div>
               <p className="mb-2">
@@ -155,8 +175,12 @@ const BillboardModal: React.FC<BillboardModalProps> = ({
             >
               İptal
             </button>
-            <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-              Satın Al
+            <button
+              onClick={handleAddToCart}
+              disabled={isAddingToCart}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-blue-300"
+            >
+              {isAddingToCart ? "Ekleniyor..." : "Sepete Ekle"}
             </button>
           </div>
         </Dialog.Content>
