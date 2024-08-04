@@ -48,7 +48,7 @@ const MyBillboards = () => {
 
   return (
     <ProtectedRoute requiredRole="billboard_owner">
-      <div>
+      <div className="my-32">
         <h1>Panolarım</h1>
         {loading ? (
           <div>Yükleniyor...</div>
