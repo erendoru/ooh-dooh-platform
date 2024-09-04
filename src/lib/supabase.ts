@@ -20,6 +20,29 @@ export async function getBillboards() {
   return data;
 }
 
+export async function getOrCreateCart(userId: string) {
+  let { data: cart, error } = await supabase
+    .from('carts')
+    .select('*')
+    .eq('user_id', userId)
+    .single()
+
+  if (error || !cart) {
+    const { data: newCart, error: createError } = await supabase
+      .from('carts')
+      .insert({ user_id: userId })
+      .single()
+
+    if (createError) {
+      throw createError
+    }
+
+    cart = newCart
+  }
+
+  return cart
+}
+
 export async function getBillboardViews(billboardId: number, startDate: string, endDate: string) {
   const { data, error } = await supabase
     .from('billboard_views')
@@ -44,8 +67,7 @@ interface Cart {
   id: string;
   user_id: string;
 }
-
-export async function addToCart(userId: string, billboardId: number, startDate: Date, endDate: Date) {
+export async function addToCart(userId: string, billboardId: number, startDate: string, endDate: string, campaignName: string) {
   // Önce kullanıcının sepetini bul veya oluştur
   let { data: cart, error: cartError } = await supabase
     .from('carts')
@@ -62,22 +84,26 @@ export async function addToCart(userId: string, billboardId: number, startDate: 
       .single();
 
     if (newCartError || !newCart) {
-      throw newCartError || new Error('Failed to create new cart');
+      throw newCartError || new Error('Yeni sepet oluşturulamadı');
     }
     cart = newCart;
   }
 
   // Sepete ürün ekle
-  const { error: itemError } = await supabase
+  const { data, error } = await supabase
     .from('cart_items')
     .insert({
       cart_id: cart.id,
       billboard_id: billboardId,
-      start_date: startDate.toISOString().split('T')[0],
-      end_date: endDate.toISOString().split('T')[0],
+      start_date: startDate,
+      end_date: endDate,
+      campaign_name: campaignName
     });
 
-  if (itemError) throw itemError;
+  if (error) {
+    console.error('Sepete eklenirken hata oluştu:', error);
+    throw error;
+  }
 
   // Sepet öğe sayısını döndür
   const { count, error: countError } = await supabase
@@ -98,5 +124,4 @@ export async function getCartItemCount(userId: string): Promise<number> {
   if (error) throw error;
 
   return count || 0;
-
 }

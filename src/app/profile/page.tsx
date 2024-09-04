@@ -32,10 +32,21 @@ const ProfilePage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [message, setMessage] = useState<string>("");
 
+  const predefinedSectors: Sector[] = [
+    { id: 1, name: "Bilişim" },
+    { id: 2, name: "Reklam" },
+    { id: 3, name: "Gıda" },
+    { id: 4, name: "Eğitim" },
+    { id: 5, name: "Sağlık" },
+    { id: 6, name: "Finans" },
+    { id: 7, name: "Turizm" },
+    { id: 8, name: "İnşaat" },
+  ];
+
   useEffect(() => {
     if (user) {
       fetchProfile();
-      fetchSectors();
+      setSectors(predefinedSectors);
     }
   }, [user]);
 
@@ -50,14 +61,8 @@ const ProfilePage: React.FC = () => {
       if (error) throw error;
       setProfile({ ...data, email: user?.email || "" });
     } catch (error) {
-      console.error("Error fetching profile:", error);
+      console.error("Profil getirilirken hata oluştu:", error);
     }
-  };
-
-  const fetchSectors = async () => {
-    const { data, error } = await supabase.from("sectors").select("*");
-    if (error) console.error("Error fetching sectors:", error);
-    else setSectors(data as Sector[]);
   };
 
   const handleChange = (
@@ -86,7 +91,7 @@ const ProfilePage: React.FC = () => {
       if (error) throw error;
       setMessage("Profil başarıyla güncellendi!");
     } catch (error) {
-      console.error("Error updating profile:", error);
+      console.error("Profil güncellenirken hata oluştu:", error);
       setMessage(
         "Profil güncellenirken bir hata oluştu. Lütfen tekrar deneyin."
       );

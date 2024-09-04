@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
@@ -19,10 +20,15 @@ const Navbar: React.FC = () => {
   const fetchCartItemCount = useCallback(async () => {
     if (!user) return;
     try {
+      const { data: carts } = await supabase
+        .from("carts")
+        .select("id", { count: "exact" })
+        .eq("user_id", user.id);
+
       const { data, error, count } = await supabase
         .from("cart_items")
         .select("id", { count: "exact" })
-        .eq("user_id", user.id);
+        .eq("cart_id", carts?.[0]?.id);
 
       if (error) throw error;
       setCartItemCount(count || 0);

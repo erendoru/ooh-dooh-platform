@@ -29,7 +29,7 @@ const Login: React.FC = () => {
         type: "success",
       });
       setTimeout(() => {
-        router.push("/dashboard"); // Kullanıcıyı dashboard sayfasına yönlendir
+        router.push("/reklam-ver"); // Kullanıcıyı dashboard sayfasına yönlendir
       }, 2000);
     } catch (error) {
       if (error instanceof AuthError) {

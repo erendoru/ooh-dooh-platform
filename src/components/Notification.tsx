@@ -1,16 +1,26 @@
 import React from "react";
 
-type NotificationProps = {
+interface NotificationProps {
   message: string;
-  type: "success" | "error";
-};
+  type: "error" | "success";
+  onClose: () => void;
+}
 
-const Notification: React.FC<NotificationProps> = ({ message, type }) => {
-  const bgColor = type === "success" ? "bg-green-500" : "bg-red-500";
-
+const Notification: React.FC<NotificationProps> = ({
+  message,
+  type,
+  onClose,
+}) => {
   return (
-    <div className={`${bgColor} text-white px-4 py-2 rounded-md mt-4`}>
-      {message}
+    <div
+      className={`fixed bottom-4 right-4 p-4 rounded-md ${
+        type === "error" ? "bg-red-500" : "bg-green-500"
+      } text-white`}
+    >
+      <p>{message}</p>
+      <button onClick={onClose} className="absolute top-1 right-1 text-white">
+        &times;
+      </button>
     </div>
   );
 };
