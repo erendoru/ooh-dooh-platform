@@ -7,7 +7,7 @@ import { Menu, X, User, ChevronDown, ShoppingCart } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar: React.FC = () => {
-  const { user, isBillboardOwner, loading, refreshUser } = useAuth();
+  const { user, isBillboardOwner } = useAuth();
   const [showMenu, setShowMenu] = useState<boolean>(false);
   const [showMobileMenu, setShowMobileMenu] = useState<boolean>(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -50,7 +50,6 @@ const Navbar: React.FC = () => {
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut();
-      await refreshUser();
       router.push("/");
     } catch (error) {
       console.error("Error signing out:", error);
@@ -62,10 +61,6 @@ const Navbar: React.FC = () => {
     setShowMobileMenu(false);
     setActiveDropdown(null);
   };
-
-  useEffect(() => {
-    refreshUser();
-  }, [pathname, refreshUser]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -96,6 +91,15 @@ const Navbar: React.FC = () => {
     }, 300);
   };
 
+  const toggleMobileMenu = () => {
+    setShowMobileMenu(!showMobileMenu);
+  };
+
+  const closeMobileMenu = () => {
+    setShowMobileMenu(false);
+    setActiveDropdown(null);
+  };
+
   const dropdownMenus = {
     uniteSahipleri: {
       left: [
@@ -122,167 +126,162 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav
-      className="bg-white shadow-md z-10"
-      style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 1000 }}
-    >
+    <nav className="bg-white shadow-md z-10 fixed top-0 left-0 right-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <Link href="/" className="flex-shrink-0" onClick={closeMenus}>
+            <Link href="/" className="flex-shrink-0" onClick={closeMobileMenu}>
               <span className="text-2xl font-bold text-[#3B82F6]">PANOM</span>
             </Link>
-            <div className="hidden md:block ml-10">
-              <div className="flex items-baseline space-x-4">
-                {Object.entries(dropdownMenus).map(([key, items]) => (
-                  <div
-                    key={key}
-                    className="relative"
-                    ref={dropdownRef}
-                    onMouseEnter={() => handleMouseEnter(key)}
-                    onMouseLeave={handleMouseLeave}
-                  >
-                    <button className="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium flex items-center">
-                      {key === "uniteSahipleri"
-                        ? "Ünite Sahipleri"
-                        : "Reklam Verenler"}
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    </button>
-                    {activeDropdown === key && (
+          </div>
+          <div className="hidden md:block">
+            <div className="ml-10 flex items-baseline space-x-4">
+              {Object.entries(dropdownMenus).map(([key, items]) => (
+                <div
+                  key={key}
+                  className="relative"
+                  onMouseEnter={() => handleMouseEnter(key)}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  <button className="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium flex items-center">
+                    {key === "uniteSahipleri"
+                      ? "Ünite Sahipleri"
+                      : "Reklam Verenler"}
+                    <ChevronDown className="ml-1 h-4 w-4" />
+                  </button>
+                  {activeDropdown === key && (
+                    <div className="absolute left-0 mt-2 w-96 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
                       <div
-                        className="absolute left-0 mt-2 w-96 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5"
-                        onMouseEnter={() => {
-                          if (timeoutRef.current) {
-                            clearTimeout(timeoutRef.current);
-                          }
-                        }}
-                        onMouseLeave={handleMouseLeave}
+                        className="py-1 flex"
+                        role="menu"
+                        aria-orientation="horizontal"
                       >
-                        <div
-                          className="py-1 flex"
-                          role="menu"
-                          aria-orientation="horizontal"
-                        >
-                          <div className="w-1/2 border-r">
-                            <h3 className="px-4 py-2 text-sm font-semibold">
-                              {key === "uniteSahipleri"
-                                ? "Ünite İşlemleri"
-                                : "Reklam İşlemleri"}
-                            </h3>
-                            {items.left.map((item) => (
-                              <Link
-                                key={item.href}
-                                href={item.href}
-                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                onClick={closeMenus}
-                              >
-                                {item.label}
-                              </Link>
-                            ))}
-                          </div>
-                          <div className="w-1/2">
-                            <h3 className="px-4 py-2 text-sm font-semibold">
-                              {key === "uniteSahipleri"
-                                ? "Faydaları"
-                                : "Avantajlar"}
-                            </h3>
-                            {items.right.map((item) => (
-                              <Link
-                                key={item.href}
-                                href={item.href}
-                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                onClick={closeMenus}
-                              >
-                                {item.label}
-                              </Link>
-                            ))}
-                          </div>
+                        <div className="w-1/2 border-r">
+                          <h3 className="px-4 py-2 text-sm font-semibold">
+                            {key === "uniteSahipleri"
+                              ? "Ünite İşlemleri"
+                              : "Reklam İşlemleri"}
+                          </h3>
+                          {items.left.map((item) => (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              onClick={closeMobileMenu}
+                            >
+                              {item.label}
+                            </Link>
+                          ))}
+                        </div>
+                        <div className="w-1/2">
+                          <h3 className="px-4 py-2 text-sm font-semibold">
+                            {key === "uniteSahipleri"
+                              ? "Faydaları"
+                              : "Avantajlar"}
+                          </h3>
+                          {items.right.map((item) => (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              onClick={closeMobileMenu}
+                            >
+                              {item.label}
+                            </Link>
+                          ))}
                         </div>
                       </div>
-                    )}
-                  </div>
-                ))}
-                <Link
-                  href="/reklam-ver"
-                  className="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium"
-                  onClick={closeMenus}
-                >
-                  Panom
-                </Link>
-              </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+              <Link
+                href="/reklam-ver"
+                className="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium"
+                onClick={closeMobileMenu}
+              >
+                Panom
+              </Link>
             </div>
           </div>
           <div className="hidden md:block">
-            <div className="ml-4 flex items-center md:ml-6">
-              {loading ? (
-                <div className="text-gray-700">Yükleniyor...</div>
-              ) : user ? (
-                <div className="relative flex">
+            {user ? (
+              <div className="ml-4 flex items-center md:ml-6">
+                <div className="relative">
                   <button
                     onClick={() => setShowMenu(!showMenu)}
-                    className="flex items-center"
+                    className="flex items-center bg-gray-100 hover:bg-gray-200 rounded-full px-3 py-2 transition-colors duration-200"
                   >
-                    <User className="h-8 w-8 rounded-full text-gray-700" />
-                    <span className="ml-2 text-gray-700">{user.email}</span>
+                    <User className="h-6 w-6 text-gray-700 mr-2" />
+                    <span className="text-gray-700 mr-1">
+                      {user?.email?.split("@")[0] || "Kullanıcı"}
+                    </span>
+                    <ChevronDown
+                      className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${
+                        showMenu ? "transform rotate-180" : ""
+                      }`}
+                    />
                   </button>
-                  <Link href="/cart" className="mr-4 relative">
-                    <ShoppingCart className="h-7 w-8 text-gray-700" />
-                    {cartItemCount > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                        {cartItemCount}
-                      </span>
-                    )}
-                  </Link>
                   {showMenu && (
-                    <div className="absolute right-0 top-10 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                    <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
                       <div
                         className="py-1"
                         role="menu"
                         aria-orientation="vertical"
-                        aria-labelledby="options-menu"
+                        aria-labelledby="user-menu"
                       >
                         <Link
                           href="/profile"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={closeMenus}
+                          role="menuitem"
+                          onClick={() => setShowMenu(false)}
                         >
                           Profil
                         </Link>
                         <Link
                           href="/dashboard"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={closeMenus}
+                          role="menuitem"
+                          onClick={() => setShowMenu(false)}
                         >
                           Dashboard
                         </Link>
-                        {isBillboardOwner && (
-                          <>
-                            <Link
-                              href="/analiz"
-                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                              onClick={closeMenus}
-                            >
-                              Analiz
-                            </Link>
-                            <Link
-                              href="/pano-yukle"
-                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                              onClick={closeMenus}
-                            >
-                              Pano Yükle
-                            </Link>
-                            <Link
-                              href="/my-billboards"
-                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                              onClick={closeMenus}
-                            >
-                              Panolarım
-                            </Link>
-                          </>
-                        )}
+                        <Link
+                          href="/analiz"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          role="menuitem"
+                          onClick={() => setShowMenu(false)}
+                        >
+                          Analiz
+                        </Link>
+                        <Link
+                          href="/panolarim"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          role="menuitem"
+                          onClick={() => setShowMenu(false)}
+                        >
+                          Panolarım
+                        </Link>
+                        <Link
+                          href="/kampanyalarim"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          role="menuitem"
+                          onClick={() => setShowMenu(false)}
+                        >
+                          Kampanyalarım
+                        </Link>
+                        <Link
+                          href="/settings"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          role="menuitem"
+                          onClick={() => setShowMenu(false)}
+                        >
+                          Ayarlar
+                        </Link>
                         <button
                           onClick={handleSignOut}
                           className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          role="menuitem"
                         >
                           Çıkış Yap
                         </button>
@@ -290,23 +289,31 @@ const Navbar: React.FC = () => {
                     </div>
                   )}
                 </div>
-              ) : (
-                <Link
-                  href="/login"
-                  className="text-[#3B82F6] hover:bg-[#3B82F6] hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-                  onClick={closeMenus}
-                >
-                  Giriş Yap
+                <Link href="/cart" className="ml-4 relative">
+                  <ShoppingCart className="h-6 w-6 text-gray-700" />
+                  {cartItemCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                      {cartItemCount}
+                    </span>
+                  )}
                 </Link>
-              )}
-            </div>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="text-[#3B82F6] hover:bg-[#3B82F6] hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                onClick={closeMobileMenu}
+              >
+                Giriş Yap
+              </Link>
+            )}
           </div>
           <div className="-mr-2 flex md:hidden">
             <button
-              onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
+              onClick={toggleMobileMenu}
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
             >
-              <span className="sr-only">Open main menu</span>
+              <span className="sr-only">Ana menüyü aç</span>
               {showMobileMenu ? (
                 <X className="block h-6 w-6" />
               ) : (
@@ -326,7 +333,7 @@ const Navbar: React.FC = () => {
                   onClick={() =>
                     setActiveDropdown(activeDropdown === key ? null : key)
                   }
-                  className="w-full text-left text-gray-700 hover:bg-gray-100  px-3 py-2 rounded-md text-base font-medium flex items-center justify-between"
+                  className="w-full text-left text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-base font-medium flex items-center justify-between"
                 >
                   {key === "uniteSahipleri"
                     ? "Ünite Sahipleri"
@@ -350,7 +357,7 @@ const Navbar: React.FC = () => {
                           key={item.href}
                           href={item.href}
                           className="text-gray-700 hover:bg-gray-100 block px-3 py-2 rounded-md text-sm"
-                          onClick={closeMenus}
+                          onClick={closeMobileMenu}
                         >
                           {item.label}
                         </Link>
@@ -365,7 +372,7 @@ const Navbar: React.FC = () => {
                           key={item.href}
                           href={item.href}
                           className="text-gray-700 hover:bg-gray-100 block px-3 py-2 rounded-md text-sm"
-                          onClick={closeMenus}
+                          onClick={closeMobileMenu}
                         >
                           {item.label}
                         </Link>
@@ -378,7 +385,7 @@ const Navbar: React.FC = () => {
             <Link
               href="/reklam-ver"
               className="text-gray-700 hover:bg-gray-100 block px-3 py-2 rounded-md text-base font-medium"
-              onClick={closeMenus}
+              onClick={closeMobileMenu}
             >
               Panom
             </Link>
@@ -396,51 +403,7 @@ const Navbar: React.FC = () => {
                 </div>
               </div>
               <div className="mt-3 px-2 space-y-1">
-                <Link
-                  href="/profile"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-                  onClick={closeMenus}
-                >
-                  Profil
-                </Link>
-                <Link
-                  href="/dashboard"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-                  onClick={closeMenus}
-                >
-                  Dashboard
-                </Link>
-                {isBillboardOwner && (
-                  <>
-                    <Link
-                      href="/analiz"
-                      className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-                      onClick={closeMenus}
-                    >
-                      Analiz
-                    </Link>
-                    <Link
-                      href="/pano-yukle"
-                      className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-                      onClick={closeMenus}
-                    >
-                      Pano Yükle
-                    </Link>
-                    <Link
-                      href="/my-billboards"
-                      className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-                      onClick={closeMenus}
-                    >
-                      Panolarım
-                    </Link>
-                  </>
-                )}
-                <button
-                  onClick={handleSignOut}
-                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-                >
-                  Çıkış Yap
-                </button>
+                {/* Kullanıcı menü öğeleri */}
               </div>
             </div>
           ) : (
@@ -449,7 +412,7 @@ const Navbar: React.FC = () => {
                 <Link
                   href="/login"
                   className="block px-3 py-2 rounded-md text-base font-medium text-[#3B82F6] hover:bg-gray-100"
-                  onClick={closeMenus}
+                  onClick={closeMobileMenu}
                 >
                   Giriş Yap
                 </Link>

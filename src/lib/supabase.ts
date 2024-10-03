@@ -11,6 +11,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
+
 export async function getBillboards() {
   const { data, error } = await supabase
     .from('billboards')

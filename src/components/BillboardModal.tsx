@@ -99,9 +99,9 @@ const BillboardModal: React.FC<BillboardModalProps> = ({
       <Dialog.Portal>
         <Dialog.Overlay className="bg-black/50 fixed inset-0" />
         <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg shadow-lg w-11/12 max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogDescription>
+          <Dialog.Description>
             Bu dialog, reklam verme işlemi için kullanılmaktadır.
-          </DialogDescription>
+          </Dialog.Description>
           {/* Dialog içeriği */}
           <Dialog.Close className="absolute top-2 right-2 p-1">
             <X className="h-6 w-6" />

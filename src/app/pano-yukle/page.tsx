@@ -4,14 +4,42 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import L from "leaflet";
+import { LeafletMouseEvent } from "leaflet";
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 
 interface BillboardType {
   id: number;
   name: string;
 }
+interface MapPickerProps {
+  position: [number, number];
+  setPosition: (position: [number, number]) => void;
+}
 
+const redIcon = new L.Icon({
+  iconUrl:
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+const MapPicker: React.FC<MapPickerProps> = ({ position, setPosition }) => {
+  const map = useMapEvents({
+    click(e: LeafletMouseEvent) {
+      setPosition([e.latlng.lat, e.latlng.lng]);
+    },
+  });
+
+  return position ? <Marker position={position} icon={redIcon} /> : null;
+};
 const AddBillboard: React.FC = () => {
-  const { user, isBillboardOwner } = useAuth();
+  const { user, userType } = useAuth();
   const router = useRouter();
   const [billboardTypes, setBillboardTypes] = useState<BillboardType[]>([]);
   const [formData, setFormData] = useState({
@@ -28,6 +56,14 @@ const AddBillboard: React.FC = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<boolean>(false);
+  const [mapPosition, setMapPosition] = useState([40.83, 29.45]);
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  useEffect(() => {
+    if (userType !== "billboard_owner") {
+      router.push("/");
+    }
+  }, [userType, router]);
 
   useEffect(() => {
     const fetchBillboardTypes = async () => {
@@ -35,7 +71,7 @@ const AddBillboard: React.FC = () => {
         .from("billboard_types")
         .select("*");
       if (error) {
-        console.error("Error fetching billboard types:", error);
+        console.error("Pano türleri getirilirken hata oluştu:", error);
       } else {
         setBillboardTypes(data);
       }
@@ -53,14 +89,14 @@ const AddBillboard: React.FC = () => {
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
+    if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       const fileExt = file.name.split(".").pop();
       const fileName = `${Math.random()}.${fileExt}`;
       const filePath = `${user?.id}/${fileName}`;
 
       try {
-        const { error: uploadError } = await supabase.storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
           .from("billboard-images")
           .upload(filePath, file);
 
@@ -68,17 +104,29 @@ const AddBillboard: React.FC = () => {
           throw uploadError;
         }
 
-        const { data } = supabase.storage
+        if (!uploadData) {
+          throw new Error("Yükleme başarılı oldu ancak veri döndürülmedi.");
+        }
+
+        const { data: urlData } = supabase.storage
           .from("billboard-images")
           .getPublicUrl(filePath);
 
+        if (!urlData || !urlData.publicUrl) {
+          throw new Error("Public URL alınamadı.");
+        }
+
         setFormData((prev) => ({
           ...prev,
-          images: [...prev.images, data.publicUrl],
+          images: [...prev.images, urlData.publicUrl],
         }));
-      } catch (error) {
-        console.error("Error uploading image: ", error);
-        setError("Failed to upload image. Please try again.");
+      } catch (error: unknown) {
+        console.error("Görsel yüklenirken hata oluştu: ", error);
+        setError(
+          `Görsel yüklenemedi: ${
+            error instanceof Error ? error.message : "Bilinmeyen hata"
+          }`
+        );
       }
     }
   };
@@ -102,26 +150,95 @@ const AddBillboard: React.FC = () => {
 
       if (error) throw error;
 
-      router.push("/my-billboards");
+      setSuccess(true);
+      setFormData({
+        name: "",
+        description: "",
+        location: "",
+        dimensions: "",
+        side: "",
+        price: "",
+        latitude: "",
+        longitude: "",
+        images: [],
+        type_id: "",
+      });
     } catch (error) {
-      console.error("Error adding billboard: ", error);
-      setError("Failed to add billboard. Please try again.");
+      console.error("Pano eklenirken hata oluştu: ", error);
+      setError("Pano eklenemedi. Lütfen tekrar deneyin.");
     } finally {
       setLoading(false);
     }
   };
 
-  if (!isBillboardOwner) {
+  const [isBillboardOwner, setIsBillboardOwner] = useState(false);
+
+  useEffect(() => {
+    const checkBillboardOwnership = async () => {
+      if (user) {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("is_billboard_owner")
+          .eq("id", user.id)
+          .single();
+
+        if (data && !error) {
+          setIsBillboardOwner(data.is_billboard_owner);
+        }
+      }
+    };
+
+    checkBillboardOwnership();
+  }, [user]);
+
+  useEffect(() => {
+    if (formData.latitude && formData.longitude) {
+      setMapPosition([
+        parseFloat(formData.latitude),
+        parseFloat(formData.longitude),
+      ]);
+    }
+  }, [formData.latitude, formData.longitude]);
+
+  const handleMapChange = (newPosition: [number, number]) => {
+    setMapPosition(newPosition);
+    setFormData((prev) => ({
+      ...prev,
+      latitude: newPosition[0].toString(),
+      longitude: newPosition[1].toString(),
+    }));
+  };
+
+  if (userType !== "billboard_owner") {
     return (
       <div className="text-center mt-10">
-        You don't have permission to access this page.
+        Bu sayfaya erişim izniniz bulunmamaktadır.
       </div>
     );
   }
-
   return (
     <div className="max-w-2xl mx-auto p-4 my-32">
       <h1 className="text-2xl font-bold mb-6">Yeni Pano Ekle</h1>
+      {success && (
+        <div
+          className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4"
+          role="alert"
+        >
+          <strong className="font-bold">Başarılı! </strong>
+          <span className="block sm:inline">
+            Panonuz başarıyla yüklenmiştir.
+          </span>
+        </div>
+      )}
+      {error && (
+        <div
+          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+          role="alert"
+        >
+          <strong className="font-bold">Hata! </strong>
+          <span className="block sm:inline">{error}</span>
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -226,44 +343,52 @@ const AddBillboard: React.FC = () => {
               value={formData.price}
               onChange={handleChange}
               required
+              min="0"
+              step="0.01"
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
             />
           </div>
-          <div>
-            <label
-              htmlFor="latitude"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Enlem
-            </label>
-            <input
-              type="number"
-              id="latitude"
-              name="latitude"
-              value={formData.latitude}
-              onChange={handleChange}
-              required
-              step="any"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="longitude"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Boylam
-            </label>
-            <input
-              type="number"
-              id="longitude"
-              name="longitude"
-              value={formData.longitude}
-              onChange={handleChange}
-              required
-              step="any"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-            />
+          <div className="flex gap-2">
+            <div>
+              <label
+                htmlFor="latitude"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Enlem
+              </label>
+              <input
+                type="number"
+                id="latitude"
+                name="latitude"
+                value={formData.latitude}
+                onChange={handleChange}
+                required
+                step="any"
+                min="-90"
+                max="90"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="longitude"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Boylam
+              </label>
+              <input
+                type="number"
+                id="longitude"
+                name="longitude"
+                value={formData.longitude}
+                onChange={handleChange}
+                required
+                step="any"
+                min="-180"
+                max="180"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              />
+            </div>
           </div>
         </div>
         <div>
@@ -317,13 +442,26 @@ const AddBillboard: React.FC = () => {
               <img
                 key={index}
                 src={image}
-                alt={`Uploaded ${index + 1}`}
+                alt={`Yüklenen ${index + 1}`}
                 className="w-20 h-20 object-cover rounded"
               />
             ))}
           </div>
         )}
-        {error && <p className="text-red-500">{error}</p>}
+        <div className="h-64 w-full mb-4">
+          <MapContainer
+            center={[mapPosition[0], mapPosition[1]]}
+            zoom={10}
+            style={{ height: "100%", width: "100%" }}
+          >
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            <MapPicker
+              position={[mapPosition[0], mapPosition[1]]}
+              setPosition={handleMapChange}
+            />
+          </MapContainer>
+        </div>
+
         <div>
           <button
             type="submit"

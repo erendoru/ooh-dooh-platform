@@ -23,7 +23,16 @@ const Footer = () => {
                 <Linkedin size={24} />
               </a>
             </div>
-            <button className="bg-[#3B82F6] text-white mt-5 p-3 rounded-full font-semibold hover:bg-[#2563EB] transition duration-300">
+            <button
+              className="bg-[#3B82F6] text-white mt-5 p-3 rounded-full font-semibold hover:bg-[#2563EB] transition duration-300"
+              onClick={() =>
+                window.open(
+                  "https://calendly.com/erendoru/30dk",
+                  "_blank",
+                  "noopener,noreferrer"
+                )
+              }
+            >
               Demo Rezervasyon
             </button>
           </div>

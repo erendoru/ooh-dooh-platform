@@ -91,7 +91,7 @@ const MapComponent: React.FC = () => {
           onClick={refreshUser}
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
         >
-          Retry
+          Tekrar Deneyin
         </button>
       </div>
     );
@@ -100,7 +100,7 @@ const MapComponent: React.FC = () => {
   if (!user) {
     return (
       <div className="flex justify-center items-center h-screen">
-        Please log in to view the map.
+        Panoları görmek için giriş yapın.
       </div>
     );
   }

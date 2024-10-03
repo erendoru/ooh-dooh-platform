@@ -96,3 +96,52 @@ body {
 .navbar {
   z-index: 50; /* Navbar'ın sidebar'ın üzerinde kalmasını sağlar */
 }
+
+.accordion-trigger[data-state="open"] .chevron {
+  transform: rotate(180deg);
+}
+
+.accordion-trigger .chevron {
+  transition: transform 0.3s ease;
+}
+
+/* AccordionTrigger'ın varsayılan oklarını gizle */
+.accordion-trigger::after {
+  display: none !important;
+}
+
+.prose {
+  @apply max-w-none;
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+  @apply font-bold my-4;
+}
+
+.prose h1 {
+  @apply text-3xl;
+}
+
+.prose h2 {
+  @apply text-2xl;
+}
+
+.prose h3 {
+  @apply text-xl;
+}
+
+.prose p {
+  @apply my-4;
+}
+
+.prose ul, .prose ol {
+  @apply my-4 pl-8;
+}
+
+.prose li {
+  @apply mb-2;
+}
+
+.prose a {
+  @apply text-blue-600 hover:underline;
+}

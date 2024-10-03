@@ -1,7 +1,6 @@
-
 import { supabase } from './supabase';
 
-export async function getUserType(userId: string) {
+export async function getUserType(userId: string): Promise<'billboard_owner' | 'customer' | null> {
   try {
     const { data, error } = await supabase
       .from('profiles')

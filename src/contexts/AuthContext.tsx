@@ -1,114 +1,87 @@
 "use client";
-
-import React, {
-  createContext,
-  useState,
-  useEffect,
-  useContext,
-  useCallback,
-} from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
-import { User, Session } from "@supabase/supabase-js";
+import { getUserType } from "@/lib/userUtils";
 
 interface AuthContextType {
-  user: User | null;
   session: Session | null;
+  user: User | null;
+  userType: "billboard_owner" | "customer" | null;
+  signIn: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
   isBillboardOwner: boolean;
-  loading: boolean;
-  error: string | null;
-  refreshUser: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  session: null,
-  isBillboardOwner: false,
-  loading: true,
-  error: null,
-  refreshUser: async () => {},
-});
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [userType, setUserType] = useState<
+    "billboard_owner" | "customer" | null
+  >(null);
   const [isBillboardOwner, setIsBillboardOwner] = useState<boolean>(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const refreshUser = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session) {
-        setSession(session);
-        setUser(session.user);
-
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("is_billboard_owner")
-          .eq("id", session.user.id)
-          .single();
-
-        if (error) throw error;
-        setIsBillboardOwner(data?.is_billboard_owner || false);
-      } else {
-        setUser(null);
-        setSession(null);
-        setIsBillboardOwner(false);
-      }
-    } catch (error) {
-      console.error("Error refreshing user:", error);
-      setError("Failed to load user data. Please try again.");
-      setUser(null);
-      setSession(null);
-      setIsBillboardOwner(false);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      await refreshUser();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        getUserType(session.user.id).then((type) => {
+          setUserType(type);
+          setIsBillboardOwner(type === "billboard_owner");
+        });
+      }
+    });
 
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
-          await refreshUser();
-        } else if (event === "SIGNED_OUT") {
-          setUser(null);
-          setSession(null);
-          setIsBillboardOwner(false);
-        }
-      });
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        getUserType(session.user.id).then((type) => {
+          setUserType(type);
+          setIsBillboardOwner(type === "billboard_owner");
+        });
+      } else {
+        setUserType(null);
+        setIsBillboardOwner(false);
+      }
+    });
 
-      return () => {
-        subscription.unsubscribe();
-      };
-    };
+    return () => subscription.unsubscribe();
+  }, []);
 
-    initializeAuth();
+  const signIn = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) throw error;
+  };
 
-    window.addEventListener("focus", refreshUser);
-
-    return () => {
-      window.removeEventListener("focus", refreshUser);
-    };
-  }, [refreshUser]);
+  const signOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+  };
 
   return (
     <AuthContext.Provider
-      value={{ user, session, isBillboardOwner, loading, error, refreshUser }}
+      value={{ session, user, userType, signIn, signOut, isBillboardOwner }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};

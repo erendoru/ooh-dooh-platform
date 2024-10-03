@@ -44,7 +44,7 @@ function Charts() {
             <CardTitle className="text-4xl tabular-nums">
               12,584{" "}
               <span className="font-sans text-sm font-normal tracking-normal text-muted-foreground">
-                steps
+                gösterim
               </span>
             </CardTitle>
           </CardHeader>
@@ -52,7 +52,7 @@ function Charts() {
             <ChartContainer
               config={{
                 steps: {
-                  label: "CPM",
+                  label: "Gösterim",
                   color: "hsl(var(--chart-1))",
                 },
               }}
@@ -107,7 +107,7 @@ function Charts() {
                   axisLine={false}
                   tickMargin={4}
                   tickFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("en-US", {
+                    return new Date(value).toLocaleDateString("tr-TR", {
                       weekday: "short",
                     });
                   }}
@@ -118,7 +118,7 @@ function Charts() {
                     <ChartTooltipContent
                       hideIndicator
                       labelFormatter={(value) => {
-                        return new Date(value).toLocaleDateString("en-US", {
+                        return new Date(value).toLocaleDateString("tr-TR", {
                           day: "numeric",
                           month: "long",
                           year: "numeric",
@@ -136,7 +136,7 @@ function Charts() {
                 >
                   <Label
                     position="insideBottomLeft"
-                    value="Average Steps"
+                    value="Ortalama Gösterim"
                     offset={10}
                     fill="hsl(var(--foreground))"
                   />
@@ -154,33 +154,33 @@ function Charts() {
           </CardContent>
           <CardFooter className="flex-col items-start gap-1">
             <CardDescription>
-              Son 7 Gün CPM Değerleri:{" "}
+              Son 7 Gün Toplam Gösterim:{" "}
               <span className="font-medium text-foreground">53,305</span>
             </CardDescription>
             <CardDescription>
-              Kampanya hedefi{" "}
+              Kampanya hedefine ulaşmak için{" "}
               <span className="font-medium text-foreground">12,584</span> daha
-              için gerekli veri.
+              gösterim gerekli.
             </CardDescription>
           </CardFooter>
         </Card>
         <Card className="flex flex-col lg:max-w-md" x-chunk="charts-01-chunk-1">
           <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-2 [&>div]:flex-1">
             <div>
-              <CardDescription>Resting HR</CardDescription>
+              <CardDescription>Ortalama Süre</CardDescription>
               <CardTitle className="flex items-baseline gap-1 text-4xl tabular-nums">
                 62
                 <span className="text-sm font-normal tracking-normal text-muted-foreground">
-                  bpm
+                  sn
                 </span>
               </CardTitle>
             </div>
             <div>
-              <CardDescription>Variability</CardDescription>
+              <CardDescription>Etkileşim Oranı</CardDescription>
               <CardTitle className="flex items-baseline gap-1 text-4xl tabular-nums">
                 35
                 <span className="text-sm font-normal tracking-normal text-muted-foreground">
-                  ms
+                  %
                 </span>
               </CardTitle>
             </div>
@@ -189,7 +189,7 @@ function Charts() {
             <ChartContainer
               config={{
                 resting: {
-                  label: "Resting",
+                  label: "Etkileşim",
                   color: "hsl(var(--chart-1))",
                 },
               }}
@@ -246,7 +246,7 @@ function Charts() {
                   axisLine={false}
                   tickMargin={8}
                   tickFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("en-US", {
+                    return new Date(value).toLocaleDateString("tr-TR", {
                       weekday: "short",
                     });
                   }}
@@ -269,7 +269,7 @@ function Charts() {
                     <ChartTooltipContent
                       indicator="line"
                       labelFormatter={(value) => {
-                        return new Date(value).toLocaleDateString("en-US", {
+                        return new Date(value).toLocaleDateString("tr-TR", {
                           day: "numeric",
                           month: "long",
                           year: "numeric",
@@ -287,9 +287,9 @@ function Charts() {
       <div className="grid w-full flex-1 gap-6 lg:max-w-[20rem]">
         <Card className="max-w-xs" x-chunk="charts-01-chunk-2">
           <CardHeader>
-            <CardTitle>Impressions</CardTitle>
+            <CardTitle>Gösterimler</CardTitle>
             <CardDescription>
-              The ımpression we get from the campaign.
+              Kampanyadan elde edilen gösterim sayıları.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
@@ -297,13 +297,13 @@ function Charts() {
               <div className="flex items-baseline gap-1 text-2xl font-bold tabular-nums leading-none">
                 12,453
                 <span className="text-sm font-normal text-muted-foreground">
-                  ımp/day
+                  gösterim/gün
                 </span>
               </div>
               <ChartContainer
                 config={{
                   steps: {
-                    label: "Steps",
+                    label: "Gösterimler",
                     color: "hsl(var(--chart-1))",
                   },
                 }}
@@ -348,13 +348,13 @@ function Charts() {
               <div className="flex items-baseline gap-1 text-2xl font-bold tabular-nums leading-none">
                 10,103
                 <span className="text-sm font-normal text-muted-foreground">
-                  guessed
+                  tahmin edilen
                 </span>
               </div>
               <ChartContainer
                 config={{
                   steps: {
-                    label: "Steps",
+                    label: "Gösterimler",
                     color: "hsl(var(--muted))",
                   },
                 }}
@@ -408,13 +408,13 @@ function Charts() {
             <div className="flex items-baseline gap-1 text-3xl font-bold tabular-nums leading-none">
               12.5
               <span className="text-sm font-normal text-muted-foreground">
-                +
+                %
               </span>
             </div>
             <ChartContainer
               config={{
                 steps: {
-                  label: "Steps",
+                  label: "Artış",
                   color: "hsl(var(--chart-1))",
                 },
               }}

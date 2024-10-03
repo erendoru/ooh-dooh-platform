@@ -57,10 +57,15 @@ const CartPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const { data: carts } = await supabase
+      if (!user) throw new Error("Kullanıcı oturumu bulunamadı.");
+
+      const { data: cart, error: cartError } = await supabase
         .from("carts")
-        .select("id", { count: "exact" })
-        .eq("user_id", user?.id);
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (cartError) throw cartError;
 
       const { data, error } = await supabase
         .from("cart_items")
@@ -74,11 +79,11 @@ const CartPage: React.FC = () => {
           campaign_name
         `
         )
-        .eq("cart_id", carts?.[0]?.id);
+        .eq("cart_id", cart.id);
 
       if (error) throw error;
 
-      const formattedData: CartItem[] = (data || []).map((item) => ({
+      const formattedData: CartItem[] = data.map((item) => ({
         id: item.id,
         billboard: Array.isArray(item.billboard)
           ? item.billboard[0]
@@ -91,8 +96,12 @@ const CartPage: React.FC = () => {
 
       setCartItems(formattedData);
     } catch (error) {
-      console.error("Error fetching cart items:", error);
-      setError("Sepet öğeleri yüklenirken bir hata oluştu.");
+      console.error("Sepet öğeleri yüklenirken hata oluştu:", error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Sepet öğeleri yüklenirken bir hata oluştu."
+      );
     } finally {
       setLoading(false);
     }
@@ -154,8 +163,11 @@ const CartPage: React.FC = () => {
 
   const handleCompleteOrder = (e: React.FormEvent) => {
     e.preventDefault();
+    if (cartItems.length === 0) {
+      setError("Sepetiniz boş. Lütfen önce ürün ekleyin.");
+      return;
+    }
     const allDesignsUploaded = cartItems.every((item) => item.design_url);
-    console.log("sipariş verildi");
     if (!allDesignsUploaded) {
       setError("Lütfen tüm panolar için tasarım yükleyin.");
       return;
@@ -164,6 +176,7 @@ const CartPage: React.FC = () => {
       setError("Lütfen bir kampanya adı girin.");
       return;
     }
+    console.log("Sipariş tamamlanıyor:", { cartItems, campaignName });
     router.push("/checkout");
   };
 

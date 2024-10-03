@@ -5,6 +5,7 @@ import { Roboto } from "next/font/google";
 import ClientLayout from "./ClientLayout";
 import { cn } from "@/lib/utils";
 const inter = Inter({ subsets: ["latin"] });
+import { AuthProvider } from "@/contexts/AuthContext";
 
 const roboto = Roboto({ subsets: ["latin"], weight: ["400", "700"] });
 
@@ -21,7 +22,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={roboto.className}>
       <body className={(inter.className, cn())}>
-        <ClientLayout>{children}</ClientLayout>
+        <AuthProvider>
+          <ClientLayout>{children}</ClientLayout>
+        </AuthProvider>
       </body>
     </html>
   );

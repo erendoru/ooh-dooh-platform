@@ -9,10 +9,12 @@ export default function ClientLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthProvider>
-      <Navbar />
-      {children}
-      <Footbar />
-    </AuthProvider>
+    <div className="flex flex-col min-h-screen">
+      <AuthProvider>
+        <Navbar />
+        <main className="flex-grow">{children}</main>
+        <Footbar />
+      </AuthProvider>
+    </div>
   );
 }
