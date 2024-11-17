@@ -2,42 +2,21 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
-import L from "leaflet";
-import { LeafletMouseEvent } from "leaflet";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
+import dynamic from "next/dynamic";
+
+const MapWithNoSSR = dynamic(() => import("@/components/LeafletMap"), {
+  ssr: false,
+  loading: () => <p>Harita yükleniyor...</p>,
+});
 
 interface BillboardType {
   id: number;
   name: string;
 }
-interface MapPickerProps {
-  position: [number, number];
-  setPosition: (position: [number, number]) => void;
-}
 
-const redIcon = new L.Icon({
-  iconUrl:
-    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
-  shadowUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
-
-const MapPicker: React.FC<MapPickerProps> = ({ position, setPosition }) => {
-  const map = useMapEvents({
-    click(e: LeafletMouseEvent) {
-      setPosition([e.latlng.lat, e.latlng.lng]);
-    },
-  });
-
-  return position ? <Marker position={position} icon={redIcon} /> : null;
-};
 const AddBillboard: React.FC = () => {
   const { user, userType } = useAuth();
   const router = useRouter();
@@ -57,8 +36,8 @@ const AddBillboard: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
-  const [mapPosition, setMapPosition] = useState([40.83, 29.45]);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+
   useEffect(() => {
     if (userType !== "billboard_owner") {
       router.push("/");
@@ -170,45 +149,13 @@ const AddBillboard: React.FC = () => {
       setLoading(false);
     }
   };
-
-  const [isBillboardOwner, setIsBillboardOwner] = useState(false);
-
-  useEffect(() => {
-    const checkBillboardOwnership = async () => {
-      if (user) {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("is_billboard_owner")
-          .eq("id", user.id)
-          .single();
-
-        if (data && !error) {
-          setIsBillboardOwner(data.is_billboard_owner);
-        }
-      }
-    };
-
-    checkBillboardOwnership();
-  }, [user]);
-
-  useEffect(() => {
-    if (formData.latitude && formData.longitude) {
-      setMapPosition([
-        parseFloat(formData.latitude),
-        parseFloat(formData.longitude),
-      ]);
-    }
-  }, [formData.latitude, formData.longitude]);
-
-  const handleMapChange = (newPosition: [number, number]) => {
-    setMapPosition(newPosition);
+  const handleMapClick = (lat: number, lng: number) => {
     setFormData((prev) => ({
       ...prev,
-      latitude: newPosition[0].toString(),
-      longitude: newPosition[1].toString(),
+      latitude: lat.toString(),
+      longitude: lng.toString(),
     }));
   };
-
   if (userType !== "billboard_owner") {
     return (
       <div className="text-center mt-10">
@@ -216,6 +163,7 @@ const AddBillboard: React.FC = () => {
       </div>
     );
   }
+
   return (
     <div className="max-w-2xl mx-auto p-4 my-32">
       <h1 className="text-2xl font-bold mb-6">Yeni Pano Ekle</h1>
@@ -239,7 +187,7 @@ const AddBillboard: React.FC = () => {
           <span className="block sm:inline">{error}</span>
         </div>
       )}
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4 mb-40">
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label
@@ -439,28 +387,17 @@ const AddBillboard: React.FC = () => {
         {formData.images.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-2">
             {formData.images.map((image, index) => (
-              <img
+              <Image
                 key={index}
                 src={image}
                 alt={`Yüklenen ${index + 1}`}
-                className="w-20 h-20 object-cover rounded"
+                width={80}
+                height={80}
+                className="object-cover rounded"
               />
             ))}
           </div>
         )}
-        <div className="h-64 w-full mb-4">
-          <MapContainer
-            center={[mapPosition[0], mapPosition[1]]}
-            zoom={10}
-            style={{ height: "100%", width: "100%" }}
-          >
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            <MapPicker
-              position={[mapPosition[0], mapPosition[1]]}
-              setPosition={handleMapChange}
-            />
-          </MapContainer>
-        </div>
 
         <div>
           <button
@@ -470,6 +407,14 @@ const AddBillboard: React.FC = () => {
           >
             {loading ? "Ekleniyor..." : "Panoyu Kaydet"}
           </button>
+        </div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">
+            Panonuzun net konumunu seçin
+          </label>
+          <div className="h-64 w-full">
+            <MapWithNoSSR onLocationSelect={handleMapClick} />
+          </div>
         </div>
       </form>
     </div>

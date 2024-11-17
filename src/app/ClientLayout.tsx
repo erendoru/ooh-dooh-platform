@@ -1,5 +1,4 @@
 "use client";
-
 import { AuthProvider } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import Footbar from "@/components/Footbar";

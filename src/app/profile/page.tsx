@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 
@@ -32,38 +32,35 @@ const ProfilePage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [message, setMessage] = useState<string>("");
 
-  const predefinedSectors: Sector[] = [
-    { id: 1, name: "Bilişim" },
-    { id: 2, name: "Reklam" },
-    { id: 3, name: "Gıda" },
-    { id: 4, name: "Eğitim" },
-    { id: 5, name: "Sağlık" },
-    { id: 6, name: "Finans" },
-    { id: 7, name: "Turizm" },
-    { id: 8, name: "İnşaat" },
-  ];
+  const predefinedSectors = useMemo(
+    () => [
+      "Teknoloji",
+      "Sağlık",
+      "Eğitim",
+      // ... diğer sektörler
+    ],
+    []
+  );
 
-  useEffect(() => {
-    if (user) {
-      fetchProfile();
-      setSectors(predefinedSectors);
-    }
-  }, [user]);
-
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
+    if (!user) return;
     try {
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
-        .eq("id", user?.id)
+        .eq("id", user.id)
         .single();
 
       if (error) throw error;
-      setProfile({ ...data, email: user?.email || "" });
+      setProfile(data);
     } catch (error) {
-      console.error("Profil getirilirken hata oluştu:", error);
+      console.error("Error fetching profile:", error);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile, predefinedSectors]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>

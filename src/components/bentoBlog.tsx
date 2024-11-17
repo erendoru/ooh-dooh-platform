@@ -1,60 +1,130 @@
-import { cn } from "@/lib/utils";
-import React from "react";
-import { BentoGrid, BentoGridItem } from "./ui/bento-grid";
-import {
-  IconClipboardCopy,
-  IconFileBroken,
-  IconSignature,
-  IconTableColumn,
-} from "@tabler/icons-react";
+"use client";
 
-export function BentoGridSecondDemo() {
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { BentoGrid, BentoGridItem } from "./ui/bento-grid";
+import { IconArticle } from "@tabler/icons-react";
+import { supabase } from "@/lib/supabase";
+
+type Post = {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt: string;
+  image_url: string;
+};
+
+export function BentoBlogGrid() {
+  const [posts, setPosts] = useState<Post[]>([]);
+
+  useEffect(() => {
+    async function fetchPosts() {
+      const { data, error } = await supabase
+        .from("posts")
+        .select("id, title, slug, excerpt, image_url")
+        .order("date", { ascending: false })
+        .limit(5);
+
+      if (error) {
+        console.error("Error fetching posts:", error);
+      } else {
+        setPosts(data || []);
+      }
+    }
+
+    fetchPosts();
+  }, []);
+
   return (
-    <BentoGrid className="max-w-4xl mx-auto md:auto-rows-[20rem] mb-20">
-      {items.map((item, i) => (
+    <BentoGrid className="max-w-4xl mx-auto mb-20 grid-cols-3 grid-rows-[auto_auto]">
+      {posts.slice(0, 3).map((post, i) => (
         <BentoGridItem
-          key={i}
-          title={item.title}
-          description={item.description}
-          header={item.header}
-          className={item.className}
-          icon={item.icon}
+          key={post.id}
+          title={
+            <Link
+              href={`/blog/${post.slug}`}
+              className="hover:underline text-center block"
+            >
+              {post.title}
+            </Link>
+          }
+          description={<div className="text-center">{post.excerpt}</div>}
+          header={
+            <div className="relative w-full h-48">
+              {post.image_url && (
+                <Image
+                  src={post.image_url}
+                  alt={post.title}
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-t-xl"
+                />
+              )}
+            </div>
+          }
+          className="flex flex-col items-center justify-center text-center"
+          icon={<IconArticle className="h-4 w-4 text-neutral-500 mx-auto" />}
         />
       ))}
+      {posts[3] && (
+        <BentoGridItem
+          key={posts[3].id}
+          title={
+            <Link
+              href={`/blog/${posts[3].slug}`}
+              className="hover:underline text-center block"
+            >
+              {posts[3].title}
+            </Link>
+          }
+          description={<div className="text-center">{posts[3].excerpt}</div>}
+          header={
+            <div className="relative w-full h-48">
+              {posts[3].image_url && (
+                <Image
+                  src={posts[3].image_url}
+                  alt={posts[3].title}
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-t-xl"
+                />
+              )}
+            </div>
+          }
+          className="col-span-2 flex flex-col items-center justify-center text-center"
+          icon={<IconArticle className="h-4 w-4 text-neutral-500 mx-auto" />}
+        />
+      )}
+      {posts[4] && (
+        <BentoGridItem
+          key={posts[4].id}
+          title={
+            <Link
+              href={`/blog/${posts[4].slug}`}
+              className="hover:underline text-center block"
+            >
+              {posts[4].title}
+            </Link>
+          }
+          description={<div className="text-center">{posts[4].excerpt}</div>}
+          header={
+            <div className="relative w-full h-48">
+              {posts[4].image_url && (
+                <Image
+                  src={posts[4].image_url}
+                  alt={posts[4].title}
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-t-xl"
+                />
+              )}
+            </div>
+          }
+          className="flex flex-col items-center justify-center text-center"
+          icon={<IconArticle className="h-4 w-4 text-neutral-500 mx-auto" />}
+        />
+      )}
     </BentoGrid>
   );
 }
-const Skeleton = () => (
-  <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl   dark:bg-dot-white/[0.2] bg-dot-black/[0.2] [mask-image:radial-gradient(ellipse_at_center,white,transparent)]  border border-transparent dark:border-white/[0.2] bg-neutral-100 dark:bg-black"></div>
-);
-const items = [
-  {
-    title: "Panom Nedir Nasıl Çalışır?",
-    description: "Panom'un tüm kolaylıklarını keşfetmek için tıkla",
-    header: <Skeleton />,
-    className: "md:col-span-2",
-    icon: <IconClipboardCopy className="h-4 w-4 text-neutral-500" />,
-  },
-  {
-    title: "The Digital Revolution",
-    description: "Dive into the transformative power of technology.",
-    header: <Skeleton />,
-    className: "md:col-span-1",
-    icon: <IconFileBroken className="h-4 w-4 text-neutral-500" />,
-  },
-  {
-    title: "The Art of Design",
-    description: "Discover the beauty of thoughtful and functional design.",
-    header: <Skeleton />,
-    className: "md:col-span-1",
-    icon: <IconSignature className="h-4 w-4 text-neutral-500" />,
-  },
-  {
-    title: "The Power of Communication",
-    description:
-      "Understand the impact of effective communication in our lives.",
-    header: <Skeleton />,
-    className: "md:col-span-2",
-    icon: <IconTableColumn className="h-4 w-4 text-neutral-500" />,
-  },
-];

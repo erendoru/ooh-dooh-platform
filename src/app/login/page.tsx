@@ -12,7 +12,8 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState("");
   const [notification, setNotification] = useState<{
     message: string;
-    type: "success" | "error";
+    type: "error" | "success";
+    onClose?: () => void;
   } | null>(null);
   const router = useRouter();
 
@@ -56,6 +57,7 @@ const Login: React.FC = () => {
           <Notification
             message={notification.message}
             type={notification.type}
+            onClose={() => setNotification(null)}
           />
         )}
 

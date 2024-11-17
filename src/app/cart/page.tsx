@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
@@ -53,65 +53,28 @@ const CartPage: React.FC = () => {
     }
   };
 
-  const fetchCartItems = async () => {
-    setLoading(true);
-    setError(null);
+  const fetchCartItems = useCallback(async () => {
+    if (!user) return;
     try {
-      if (!user) throw new Error("Kullanıcı oturumu bulunamadı.");
-
-      const { data: cart, error: cartError } = await supabase
-        .from("carts")
-        .select("id")
-        .eq("user_id", user.id)
-        .single();
-
-      if (cartError) throw cartError;
-
+      setLoading(true);
       const { data, error } = await supabase
         .from("cart_items")
-        .select(
-          `
-          id,
-          billboard:billboard_id (id, name, dimensions, price),
-          start_date,
-          end_date,
-          design_url,
-          campaign_name
-        `
-        )
-        .eq("cart_id", cart.id);
+        .select("*")
+        .eq("user_id", user.id);
 
       if (error) throw error;
-
-      const formattedData: CartItem[] = data.map((item) => ({
-        id: item.id,
-        billboard: Array.isArray(item.billboard)
-          ? item.billboard[0]
-          : item.billboard,
-        start_date: item.start_date,
-        end_date: item.end_date,
-        design_url: item.design_url,
-        campaign_name: item.campaign_name,
-      }));
-
-      setCartItems(formattedData);
+      setCartItems(data || []);
     } catch (error) {
-      console.error("Sepet öğeleri yüklenirken hata oluştu:", error);
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Sepet öğeleri yüklenirken bir hata oluştu."
-      );
+      console.error("Error fetching cart items:", error);
+      setError("Cart items could not be loaded");
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
-    if (user) {
-      fetchCartItems();
-    }
-  }, [user]);
+    fetchCartItems();
+  }, [fetchCartItems]);
 
   const handleFileSelect = async (
     e: React.ChangeEvent<HTMLInputElement>,

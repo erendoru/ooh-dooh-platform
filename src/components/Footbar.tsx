@@ -1,27 +1,27 @@
 import React from "react";
 import Link from "next/link";
-import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
+import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from "react-icons/fa";
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-800 text-white py-10">
+    <footer className="bg-gray-900 text-white py-8">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-1">
             <h2 className="text-3xl font-bold mb-4">PANOM</h2>
-            <div className="flex space-x-4">
-              <a href="#" className="hover:text-blue-400">
-                <Facebook size={24} />
-              </a>
-              <a href="#" className="hover:text-blue-400">
-                <Twitter size={24} />
-              </a>
-              <a href="#" className="hover:text-blue-400">
-                <Instagram size={24} />
-              </a>
-              <a href="#" className="hover:text-blue-400">
-                <Linkedin size={24} />
-              </a>
+            <div className="flex space-x-4 mt-4">
+              <Link href="#" className="hover:text-blue-400">
+                <FaFacebook size={24} />
+              </Link>
+              <Link href="#" className="hover:text-blue-400">
+                <FaTwitter size={24} />
+              </Link>
+              <Link href="#" className="hover:text-pink-400">
+                <FaInstagram size={24} />
+              </Link>
+              <Link href="#" className="hover:text-blue-600">
+                <FaLinkedin size={24} />
+              </Link>
             </div>
             <button
               className="bg-[#3B82F6] text-white mt-5 p-3 rounded-full font-semibold hover:bg-[#2563EB] transition duration-300"

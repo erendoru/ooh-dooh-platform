@@ -3,7 +3,7 @@ import HowItWorks from "@/components/HowItWorks";
 import { InfiniteMovingCardsDemo } from "@/components/Customers";
 import Features from "@/components/Features";
 import FAQ from "@/components/FAQ";
-import { BentoGridSecondDemo } from "@/components/bentoBlog";
+import { BentoBlogGrid } from "@/components/bentoBlog";
 import CallToAction from "@/components/CallToAction";
 
 export default function Home() {
@@ -12,9 +12,9 @@ export default function Home() {
       <Hero />
       <HowItWorks />
       <Features />
-      <BentoGridSecondDemo />
       <InfiniteMovingCardsDemo />
       <CallToAction />
+      <BentoBlogGrid />
     </main>
   );
 }

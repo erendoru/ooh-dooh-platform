@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import "react-datepicker/dist/react-datepicker.css";
 import { Billboard } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
+import Image from "next/image";
 
 interface BillboardModalProps {
   billboard: Billboard;
@@ -33,6 +34,9 @@ const BillboardModal: React.FC<BillboardModalProps> = ({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
+  // billboard.images'in bir dizi olduğundan emin oluyoruz
+  const images = Array.isArray(billboard.images) ? billboard.images : [];
+
   useEffect(() => {
     async function fetchViews() {
       try {
@@ -59,13 +63,13 @@ const BillboardModal: React.FC<BillboardModalProps> = ({
 
   const nextImage = () => {
     setCurrentImageIndex((prevIndex) =>
-      prevIndex === billboard.images.length - 1 ? 0 : prevIndex + 1
+      prevIndex === images.length - 1 ? 0 : prevIndex + 1
     );
   };
 
   const prevImage = () => {
     setCurrentImageIndex((prevIndex) =>
-      prevIndex === 0 ? billboard.images.length - 1 : prevIndex - 1
+      prevIndex === 0 ? images.length - 1 : prevIndex - 1
     );
   };
 
@@ -94,42 +98,67 @@ const BillboardModal: React.FC<BillboardModalProps> = ({
     }
   };
 
+  const renderImage = (src: string) => {
+    if (src.startsWith("data:image")) {
+      return (
+        <Image
+          src={src}
+          alt={`${billboard.name} - Görsel`}
+          width={500}
+          height={300}
+          className="w-full h-full object-cover rounded"
+        />
+      );
+    } else {
+      return (
+        <Image
+          src={src}
+          alt={`${billboard.name} - Görsel`}
+          layout="fill"
+          objectFit="cover"
+          className="rounded"
+        />
+      );
+    }
+  };
+
   return (
     <Dialog.Root open={true} onOpenChange={onClose}>
       <Dialog.Portal>
         <Dialog.Overlay className="bg-black/50 fixed inset-0" />
         <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg shadow-lg w-11/12 max-w-2xl max-h-[90vh] overflow-y-auto">
-          <Dialog.Description>
-            Bu dialog, reklam verme işlemi için kullanılmaktadır.
-          </Dialog.Description>
-          {/* Dialog içeriği */}
-          <Dialog.Close className="absolute top-2 right-2 p-1">
-            <X className="h-6 w-6" />
-          </Dialog.Close>
-
-          <div className="relative w-full h-64 mb-4">
-            <img
-              src={billboard.images[currentImageIndex]}
-              alt={`${billboard.name} - Image ${currentImageIndex + 1}`}
-              className="w-full h-full object-cover rounded"
-            />
-            <button
-              onClick={prevImage}
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/50 p-2 rounded-full"
-            >
-              ←
-            </button>
-            <button
-              onClick={nextImage}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/50 p-2 rounded-full"
-            >
-              →
-            </button>
-          </div>
-
           <Dialog.Title className="text-xl font-bold mb-4">
             {billboard.name}
           </Dialog.Title>
+          <Dialog.Description>
+            Bu dialog, reklam verme işlemi için kullanılmaktadır.
+          </Dialog.Description>
+
+          <div className="relative w-full h-64 mb-4">
+            {images.length > 0 ? (
+              renderImage(images[currentImageIndex])
+            ) : (
+              <div className="w-full h-full bg-gray-200 flex items-center justify-center rounded">
+                <p>Görsel bulunamadı</p>
+              </div>
+            )}
+            {images.length > 1 && (
+              <>
+                <button
+                  onClick={prevImage}
+                  className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/50 p-2 rounded-full"
+                >
+                  ←
+                </button>
+                <button
+                  onClick={nextImage}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/50 p-2 rounded-full"
+                >
+                  →
+                </button>
+              </>
+            )}
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
@@ -172,6 +201,7 @@ const BillboardModal: React.FC<BillboardModalProps> = ({
                   endDate={endDate}
                   minDate={startDate}
                   className="w-full p-2 border rounded"
+                  excludeDates={excludedDates}
                 />
               </div>
               <ul className="max-h-32 overflow-y-auto">
@@ -199,6 +229,10 @@ const BillboardModal: React.FC<BillboardModalProps> = ({
               {isAddingToCart ? "Ekleniyor..." : "Sepete Ekle"}
             </button>
           </div>
+
+          <Dialog.Close className="absolute top-2 right-2 p-1">
+            <X className="h-6 w-6" />
+          </Dialog.Close>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

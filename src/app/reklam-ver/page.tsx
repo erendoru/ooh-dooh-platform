@@ -4,10 +4,12 @@ import React, { useState, useEffect } from "react";
 import Map, { Marker } from "react-map-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { supabase } from "@/lib/supabase";
+import { FiFilter } from "react-icons/fi";
 import { useAuth } from "@/contexts/AuthContext";
 import BillboardModal from "../../components/BillboardModal";
 import HowToUseSidebar from "../../components/HowToUseSidebar";
 import { Billboard, BillboardType } from "@/types";
+import Image from "next/image";
 
 const MapComponent: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -107,11 +109,16 @@ const MapComponent: React.FC = () => {
 
   return (
     <div
-      className="relative"
+      className="relative mt-10"
       style={{ width: "100vw", height: "calc(110vh - 64px)" }}
     >
-      <div className="absolute top-4 left-4 z-10 p-6 rounded-lg ">
-        <h3 className="font-bold mb-2">Pano Türü Filtrele:</h3>
+      <div className="absolute  z-10 p-6 rounded-lg flex justify-between items-center ">
+        <div className="flex items-center mb-2 px-5 ">
+          <FiFilter className="mr-2" size={20} />
+          <h3 className="font-bold text-lg text-gray-700 mt-2 ">
+            Pano Türü Filtrele
+          </h3>
+        </div>
         <div className="flex flex-wrap gap-2">
           <label className="flex items-center bg-gray-100 px-3 py-1 rounded-full">
             <input
@@ -163,10 +170,12 @@ const MapComponent: React.FC = () => {
               setSelectedBillboard(billboard);
             }}
           >
-            <img
+            <Image
               src="/pin.png"
               alt="Billboard Location"
-              style={{ width: "30px", height: "30px" }}
+              width={25}
+              height={41}
+              className="marker-icon"
             />
           </Marker>
         ))}

@@ -10,11 +10,11 @@ type WithAuthProps = {
   user: User;
 };
 
-const withAuth = <P extends WithAuthProps>(
-  WrappedComponent: ComponentType<P>,
+const withAuth = <P extends object>(
+  WrappedComponent: ComponentType<P & WithAuthProps>,
   allowedRoles: string[] = []
 ) => {
-  return (props: Omit<P, keyof WithAuthProps>) => {
+  const WithAuthComponent = (props: Omit<P, keyof WithAuthProps>) => {
     const router = useRouter();
     const [user, setUser] = useState<User | null>(null);
 
@@ -52,6 +52,15 @@ const withAuth = <P extends WithAuthProps>(
 
     return <WrappedComponent {...(props as P)} user={user} />;
   };
+
+  WithAuthComponent.displayName = `WithAuth(${getDisplayName(
+    WrappedComponent
+  )})`;
+  return WithAuthComponent;
 };
+
+function getDisplayName(WrappedComponent: ComponentType<any>) {
+  return WrappedComponent.displayName || WrappedComponent.name || "Component";
+}
 
 export default withAuth;
